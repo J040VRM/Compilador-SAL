@@ -1,55 +1,87 @@
-# Prerequisites
+# =========================
+# Compilação C/C++
+# =========================
+
+# Dependências geradas pelo compilador
 *.d
 
-# Object files
+# Objetos
 *.o
-*.ko
 *.obj
-*.elf
 
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
+# Bibliotecas
 *.a
+*.lib
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
-*.dll
+# Bibliotecas compartilhadas
 *.so
 *.so.*
 *.dylib
+*.dll
 
-# Executables
-*.exe
+# Executáveis / binários
 *.out
 *.app
 *.i*86
 *.x86_64
 *.hex
+*.elf
 
-# Debug files
+# Debug
 *.dSYM/
 *.su
 *.idb
 *.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# debug information files
 *.dwo
+
+# Precompiled headers
+*.gch
+*.pch
+
+# Linker / build intermediates
+*.ilk
+*.map
+*.exp
+
+# =========================
+# macOS
+# =========================
+
+.DS_Store
+
+# Xcode
+DerivedData/
+.build/
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+
+# =========================
+# Editores
+# =========================
+
+.vscode/
+.idea/
+
+# =========================
+# CMake / Make
+# =========================
+
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+makedep*
+libtool
+aclocal.m4
+m4/
+autom4te.cache/
+
+# =========================
+# Logs
+# =========================
+
+*.log

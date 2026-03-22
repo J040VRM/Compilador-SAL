@@ -10,6 +10,7 @@ static int lex_advance(Lexer *lexer);
 
 static void skip_whitespace(Lexer *lexer);
 static void skip_comments(Lexer *lexer);
+void skip_ignored(Lexer *lexer);
 
 static Token lex_make_token(enum Category category, const char *lexeme, int line, int column);
 
@@ -34,22 +35,55 @@ void lex_destroy(Lexer *lexer) {
 }
 
 Token lex_next(Lexer *lexer) {
-    skip_whitespace(lexer);
-    skip_comments(lexer);
-    skip_whitespace(lexer);
+    int c;
+    int line;
+    int column;
 
-    /* Aqui depois você vai:
-       1. verificar EOF
-       2. olhar o próximo caractere
-       3. decidir qual função chamar
-    */
+    skip_ignored(lexer);
 
-    return lex_make_token(sEOF, "", lexer->line, lexer->column);
+    line = lexer->line;
+    column = lexer->column;
+
+    c = lex_peek(lexer);
+
+    if (c == EOF) {
+        return lex_make_token(sEOF, "", line, column);
+    }
+
+    if (/* c começa identificador */) {
+        return lex_read_identifier_or_keyword(lexer);
+    }
+
+    if (/* c começa número */) {
+        return lex_read_number(lexer);
+    }
+
+    if (/* c é aspas dupla */) {
+        return lex_read_string(lexer);
+    }
+
+    if (/* c é aspas simples */) {
+        return lex_read_char(lexer);
+    }
+
+    return lex_read_operator_or_delimiter(lexer);
 }
 
 /* =========================
    Implementações internas
    ========================= */
+
+static void skip_ignored(Lexer *lexer) {
+    int before;
+    int after;
+
+    do {
+        // guardar posição/estado
+        // chamar skip_whitespace
+        // chamar skip_comments
+        // comparar se houve avanço
+    } while (houve avanço);
+}
 
 static int lex_peek(Lexer *lexer) {
     int c = fgetc(lexer->file_pointer);
@@ -82,11 +116,46 @@ static void skip_whitespace(Lexer *lexer) {
 }
 
 static void skip_comments(Lexer *lexer) {
-    /* Aqui depois você vai tratar:
-       @ comentário de linha
-       @{ ... }@ comentário de bloco
-    */
-    (void)lexer;
+    int c = lex_peek(lexer);
+
+    if (c != '@') {
+        return;
+    }
+
+    /* consome o '@' inicial */
+    lex_advance(lexer);
+
+    c = lex_peek(lexer);
+
+    if (c == '{') {
+        lex_advance(lexer); /* consome '{' */
+
+        while (1) {
+            c = lex_advance(lexer);
+
+            if (c == EOF) {
+                return;
+            }
+
+            if (c == '}') {
+                if (lex_peek(lexer) == '@') {
+                    lex_advance(lexer); /* consome @ */
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        while (1) {
+            c = lex_peek(lexer);
+
+            if (c == '\n' || c == EOF) {
+                break;
+            }
+
+            lex_advance(lexer);
+        }
+    }
 }
 
 static Token lex_make_token(enum Category category, const char *lexeme, int line, int column) {

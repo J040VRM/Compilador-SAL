@@ -192,13 +192,58 @@ static Token lex_read_number(Lexer *lexer) {
 }
 
 static Token lex_read_string(Lexer *lexer) {
-    (void)lexer;
-    return lex_make_token(sEOF, "", 0, 0);
+    int line = lexer->line;
+    int column = lexer->column;
+    int c;
+    char aux[2];
+    char concat[256];
+
+    concat[0] = '\0';
+
+    lex_advance(lexer); // consome as aspas
+
+    c = lex_peek(lexer);
+
+    while (c != '"' && c != EOF && c != '\n') {
+        aux[0] = (char)lex_advance(lexer);
+        aux[1] = '\0';
+        strcat(concat, aux);
+        c = lex_peek(lexer);
+    }
+
+    if (c != '"') {
+        return lex_make_token(sERROR, "", line, column);
+    }
+
+    lex_advance(lexer);
+
+    return lex_make_token(sSTRING, concat, line, column);
 }
 
 static Token lex_read_char(Lexer *lexer) {
-    (void)lexer;
-    return lex_make_token(sEOF, "", 0, 0);
+    int line = lexer->line;
+    int column = lexer->column;
+    int c;
+    char aux[2];
+
+    lex_advance(lexer); /* consome aspas simples de abertura */
+
+    c = lex_advance(lexer);
+    if (c == EOF || c == '\n' || c == '\'') {
+        return lex_make_token(sERROR, "", line, column);
+    }
+
+    aux[0] = (char)c;
+    aux[1] = '\0';
+
+    c = lex_peek(lexer);
+    if (c != '\'') {
+        return lex_make_token(sERROR, "", line, column);
+    }
+
+    lex_advance(lexer); /* consome aspas simples de fechamento */
+
+    return lex_make_token(sCTECHAR, aux, line, column);
 }
 
 static Token lex_read_operator_or_delimiter(Lexer *lexer) {

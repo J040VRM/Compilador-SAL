@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 #include "lex.h"
 #include "token.h"
 
@@ -10,7 +11,7 @@ static int lex_advance(Lexer *lexer);
 
 static void skip_whitespace(Lexer *lexer);
 static void skip_comments(Lexer *lexer);
-void skip_ignored(Lexer *lexer);
+static void skip_ignored(Lexer *lexer);
 
 static Token lex_make_token(enum Category category, const char *lexeme, int line, int column);
 
@@ -36,33 +37,28 @@ void lex_destroy(Lexer *lexer) {
 
 Token lex_next(Lexer *lexer) {
     int c;
-    int line;
-    int column;
 
     skip_ignored(lexer);
-
-    line = lexer->line;
-    column = lexer->column;
 
     c = lex_peek(lexer);
 
     if (c == EOF) {
-        return lex_make_token(sEOF, "", line, column);
+        return lex_make_token(sEOF, "", lexer -> line, lexer -> column); // -> acessa um atributo da struct por ponterio 
     }
 
-    if (/* c começa identificador */) {
+    if (isalpha(c) || c == '_') {
         return lex_read_identifier_or_keyword(lexer);
     }
 
-    if (/* c começa número */) {
+    if (isdigit(c)) {
         return lex_read_number(lexer);
     }
 
-    if (/* c é aspas dupla */) {
+    if (c == '"') {
         return lex_read_string(lexer);
     }
 
-    if (/* c é aspas simples */) {
+    if (c == '\'') {
         return lex_read_char(lexer);
     }
 
@@ -74,15 +70,17 @@ Token lex_next(Lexer *lexer) {
    ========================= */
 
 static void skip_ignored(Lexer *lexer) {
-    int before;
-    int after;
+    long before;
+    long after;
 
     do {
-        // guardar posição/estado
-        // chamar skip_whitespace
-        // chamar skip_comments
-        // comparar se houve avanço
-    } while (houve avanço);
+        before = ftell(lexer->file_pointer);
+
+        skip_whitespace(lexer);
+        skip_comments(lexer);
+
+        after = ftell(lexer->file_pointer);
+    } while (before != after);
 }
 
 static int lex_peek(Lexer *lexer) {
@@ -175,8 +173,22 @@ static Token lex_read_identifier_or_keyword(Lexer *lexer) {
 }
 
 static Token lex_read_number(Lexer *lexer) {
-    (void)lexer;
-    return lex_make_token(sEOF, "", 0, 0);
+    int line = lexer->line;
+    int column = lexer->column;
+    int c = lex_peek(lexer);
+    char aux[2];
+    char concat[256];
+
+    concat[0] = '\0';
+
+    while (isdigit(c)) {
+        aux[0] = (char)lex_advance(lexer);
+        aux[1] = '\0';
+        strcat(concat, aux);
+        c = lex_peek(lexer);
+    }
+
+    return lex_make_token(sCTEINT, concat, line, column);
 }
 
 static Token lex_read_string(Lexer *lexer) {

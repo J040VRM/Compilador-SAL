@@ -247,6 +247,109 @@ static Token lex_read_char(Lexer *lexer) {
 }
 
 static Token lex_read_operator_or_delimiter(Lexer *lexer) {
-    (void)lexer;
-    return lex_make_token(sEOF, "", 0, 0);
+    int line = lexer->line;
+    int column = lexer->column;
+    int c = lex_peek(lexer);
+
+    switch (c) {
+        case ':':
+            lex_advance(lexer);
+            if (lex_peek(lexer) == '=') {
+                lex_advance(lexer);
+                return lex_make_token(sATRIB, ":=", line, column);
+            }
+            return lex_make_token(sCOLON, ":", line, column);
+
+        case '<':
+            lex_advance(lexer);
+            if (lex_peek(lexer) == '=') {
+                lex_advance(lexer);
+                return lex_make_token(sMENORIG, "<=", line, column);
+            }
+            if (lex_peek(lexer) == '>') {
+                lex_advance(lexer);
+                return lex_make_token(sDIFERENTE, "<>", line, column);
+            }
+            return lex_make_token(sMENOR, "<", line, column);
+
+        case '>':
+            lex_advance(lexer);
+            if (lex_peek(lexer) == '=') {
+                lex_advance(lexer);
+                return lex_make_token(sMAIORIG, ">=", line, column);
+            }
+            return lex_make_token(sMAIOR, ">", line, column);
+
+        case '.':
+            lex_advance(lexer);
+            if (lex_peek(lexer) == '.') {
+                lex_advance(lexer);
+                return lex_make_token(sPTOPTO, "..", line, column);
+            }
+            return lex_make_token(sERROR, ".", line, column);
+
+        case '=':
+            lex_advance(lexer);
+            if (lex_peek(lexer) == '>') {
+                lex_advance(lexer);
+                return lex_make_token(sIMPLIC, "=>", line, column);
+            }
+            return lex_make_token(sIGUAL, "=", line, column);
+
+        case '+':
+            lex_advance(lexer);
+            return lex_make_token(sSOMA, "+", line, column);
+
+        case '-':
+            lex_advance(lexer);
+            return lex_make_token(sSUBRAT, "-", line, column);
+
+        case '*':
+            lex_advance(lexer);
+            return lex_make_token(sMULT, "*", line, column);
+
+        case '/':
+            lex_advance(lexer);
+            return lex_make_token(sDIV, "/", line, column);
+
+        case '^':
+            lex_advance(lexer);
+            return lex_make_token(sAND, "^", line, column);
+
+        case 'v':
+            lex_advance(lexer);
+            return lex_make_token(sOR, "v", line, column);
+
+        case '~':
+            lex_advance(lexer);
+            return lex_make_token(sNEG, "~", line, column);
+
+        case '(':
+            lex_advance(lexer);
+            return lex_make_token(sLPAR, "(", line, column);
+
+        case ')':
+            lex_advance(lexer);
+            return lex_make_token(sRPAR, ")", line, column);
+
+        case '[':
+            lex_advance(lexer);
+            return lex_make_token(sLBRACK, "[", line, column);
+
+        case ']':
+            lex_advance(lexer);
+            return lex_make_token(sRBRACK, "]", line, column);
+
+        case ',':
+            lex_advance(lexer);
+            return lex_make_token(sCOMMA, ",", line, column);
+
+        case ';':
+            lex_advance(lexer);
+            return lex_make_token(sSEMI, ";", line, column);
+
+        default:
+            lex_advance(lexer);
+            return lex_make_token(sERROR, "", line, column);
+    }
 }

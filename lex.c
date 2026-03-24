@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 #include "lex.h"
 #include "token.h"
 
@@ -158,18 +159,22 @@ static void skip_comments(Lexer *lexer) {
 
 static Token lex_make_token(enum Category category, const char *lexeme, int line, int column) {
     Token token;
+
     token.category = category;
-    token.lexeme = NULL; /* depois você decide como copiar o lexema */
+
+    if (lexeme != NULL) {
+        token.lexeme = malloc(strlen(lexeme) + 1);
+        if (token.lexeme != NULL) {
+            strcpy(token.lexeme, lexeme);
+        }
+    } else {
+        token.lexeme = NULL;
+    }
+
     token.line = line;
     token.column = column;
 
-    (void)lexeme;
     return token;
-}
-
-static Token lex_read_identifier_or_keyword(Lexer *lexer) {
-    (void)lexer;
-    return lex_make_token(sEOF, "", 0, 0);
 }
 
 static Token lex_read_number(Lexer *lexer) {
@@ -352,4 +357,35 @@ static Token lex_read_operator_or_delimiter(Lexer *lexer) {
             lex_advance(lexer);
             return lex_make_token(sERROR, "", line, column);
     }
+}
+
+static enum Category keyword_or_ident(const char *lexeme) {
+    if (strcmp(lexeme, "if") == 0) return sIF;
+    if (strcmp(lexeme, "int") == 0) return sINT;
+    if (strcmp(lexeme, "module") == 0) return sMODULE;
+    if (strcmp(lexeme, "proc") == 0) return sPROC;
+    if (strcmp(lexeme, "else") == 0) return sELSE;
+    if (strcmp(lexeme, "v") == 0) return sOR;
+
+    return sIDENTIF;
+}
+
+static Token lex_read_identifier_or_keyword(Lexer *lexer) {
+    int line = lexer->line;
+    int column = lexer->column;
+    int c = lex_peek(lexer);
+    char aux[2];
+    char concat[256];
+
+    concat[0] = '\0';
+
+    while (isalpha(c) || isdigit(c) || c == '_') {
+        aux[0] = (char)lex_advance(lexer);
+        aux[1] = '\0';
+        strcat(concat, aux);
+        c = lex_peek(lexer);
+    }
+
+    enum Category category = keyword_or_ident(concat);
+    return lex_make_token(category, concat, line, column);
 }

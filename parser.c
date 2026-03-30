@@ -13,7 +13,7 @@ static void program();
 static void block();
 
 static void stmt_list();
-static void smt();
+static void stmt();
 static void expr();
 static void term();
 static void factor();
@@ -51,11 +51,15 @@ static void stmt() {
     if (current_token.category == sIDENTIF) {
         match(sIDENTIF);
         match(sATRIB);
-        match(sCTEINT);  
+        expr(); 
         match(sSEMI);
     }
     else if (current_token.category == sIF) {
         match(sIF);
+        expr();
+        match(sTHEN);
+        stmt_list();
+        match(sEND);
     }
     else {
         printf("Erro: comando inválido na linha %d\n", current_token.line);
@@ -69,24 +73,6 @@ static void block(){
     stmt_list();
 
     match(sEND);
-}
-
-static void factor() {
-    if (current_token.category == sIDENTIF) {
-        match(sLPAR);
-        factor();
-    }
-    else if (current_token.category == sCTEINT) {
-        match(sCTEINT);
-        factor();
-    }
-    else if (current_token.category = sLPAR) {
-        match(sLPAR);
-        factor;
-    }
-    else {
-        exit(0);
-    }
 }
 
 static void program() {
@@ -109,5 +95,42 @@ static void factor() {
     } else {
         printf("Erro: fator inválido na linha %d\n", current_token.line);
         exit(1);
+    }
+}
+
+static void term() {
+    factor();
+    while (current_token.category == sMULT || current_token.category == sDIV) {
+        if (current_token.category == sMULT) {
+            match(sMULT);
+        } else {
+            match(sDIV);
+        }
+        factor();
+    }
+}
+
+static void expr() {
+    term();
+
+    while (current_token.category == sSOMA || current_token.category == sSUBRAT) {
+        if (current_token.category == sSOMA) {
+            match(sSOMA);
+        } else {
+            match(sSUBRAT);
+        }
+        term();
+    }
+
+    if (current_token.category == sMAIOR ||
+        current_token.category == sMENOR ||
+        current_token.category == sIGUAL ||
+        current_token.category == sMAIORIG ||
+        current_token.category == sMENORIG ||
+        current_token.category == sDIFERENTE) {
+
+        enum Category op = current_token.category;
+        match(op);
+        term();
     }
 }

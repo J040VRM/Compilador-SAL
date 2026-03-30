@@ -366,6 +366,9 @@ static enum Category keyword_or_ident(const char *lexeme) {
     if (strcmp(lexeme, "proc") == 0) return sPROC;
     if (strcmp(lexeme, "else") == 0) return sELSE;
     if (strcmp(lexeme, "v") == 0) return sOR;
+    if (strcmp(lexeme, "start") == 0) return sSTART;
+    if (strcmp(lexeme, "end") == 0) return sEND;
+    if (strcmp(lexeme, "then") == 0) return sTHEN;
 
     return sIDENTIF;
 }

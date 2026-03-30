@@ -21,6 +21,7 @@ enum Category {
     sELSE,
     sMATCH,
     sWHEN,
+    sTHEN,
     sOTHERWISE,
     sFOR,
     sTO,

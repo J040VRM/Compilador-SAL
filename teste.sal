@@ -1,4 +1,7 @@
 module teste;
 start
     x := 10;
+    if x > 5 then
+        x := x + 1;
+    end
 end

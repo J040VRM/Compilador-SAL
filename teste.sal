@@ -1,6 +1,4 @@
 module teste;
-int x;
-x := 10;
-if x > 5 then
-    x := x + 1;
-end;
+start
+    x := 10;
+end

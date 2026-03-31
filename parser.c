@@ -40,7 +40,9 @@ static void match (enum Category expected){
 }
 
 static void stmt_list(){
-    while (current_token.category == sIDENTIF || current_token.category == sIF)
+    while (current_token.category == sIDENTIF || 
+           current_token.category == sIF || 
+           current_token.category == sWHILE)
     {
         stmt();
     }
@@ -58,6 +60,19 @@ static void stmt() {
         match(sIF);
         expr();
         match(sTHEN);
+        stmt_list();
+
+        if (current_token.category == sELSE) {
+            match(sELSE);
+            stmt_list();
+        }
+
+        match(sEND);
+    }
+    else if (current_token.category == sWHILE) {
+        match(sWHILE);
+        expr();
+        match(sDO);
         stmt_list();
         match(sEND);
     }

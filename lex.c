@@ -321,10 +321,6 @@ static Token lex_read_operator_or_delimiter(Lexer *lexer) {
             lex_advance(lexer);
             return lex_make_token(sAND, "^", line, column);
 
-        case 'v':
-            lex_advance(lexer);
-            return lex_make_token(sOR, "v", line, column);
-
         case '~':
             lex_advance(lexer);
             return lex_make_token(sNEG, "~", line, column);
@@ -355,7 +351,10 @@ static Token lex_read_operator_or_delimiter(Lexer *lexer) {
 
         default:
             lex_advance(lexer);
-            return lex_make_token(sERROR, "", line, column);
+            char err[2];
+            err[0] = (char)c;
+            err[1] = '\0';
+            return lex_make_token(sERROR, err, line, column);
     }
 }
 
@@ -369,6 +368,10 @@ static enum Category keyword_or_ident(const char *lexeme) {
     if (strcmp(lexeme, "start") == 0) return sSTART;
     if (strcmp(lexeme, "end") == 0) return sEND;
     if (strcmp(lexeme, "then") == 0) return sTHEN;
+    if (strcmp(lexeme, "while") == 0) return sWHILE;
+    if (strcmp(lexeme, "do") == 0) return sDO;
+    if (strcmp(lexeme, "print") == 0) return sPRINT;
+    if (strcmp(lexeme, "scan") == 0) return sSCAN;
 
     return sIDENTIF;
 }

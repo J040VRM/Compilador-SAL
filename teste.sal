@@ -1,13 +1,6 @@
 module teste;
 start
-    x := 3;
-
-    while x > 0 do
-        if x > 1 then
-            x := x - 1;
-        else
-            x := 0;
-        end
-    end
-
+    int x, y;
+    x := 10;
+    y := x + 1;
 end

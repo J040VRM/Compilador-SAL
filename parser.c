@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "parser.h"
 #include "token.h"
+#include "symtab.h"
 
 static Token current_token;
 static Lexer *parser_lexer;
@@ -17,6 +19,7 @@ static void stmt();
 static void expr();
 static void term();
 static void factor();
+static void decl();
 
 void parse_program(Lexer *lexer){
     parser_lexer = lexer;
@@ -42,7 +45,10 @@ static void match (enum Category expected){
 static void stmt_list(){
     while (current_token.category == sIDENTIF || 
            current_token.category == sIF || 
-           current_token.category == sWHILE)
+           current_token.category == sWHILE ||
+           current_token.category == sINT ||
+           current_token.category == sBOOL ||
+           current_token.category == sCHAR)
     {
         stmt();
     }
@@ -50,10 +56,23 @@ static void stmt_list(){
 }
 
 static void stmt() {
-    if (current_token.category == sIDENTIF) {
+    if (current_token.category == sINT || 
+        current_token.category == sBOOL || 
+        current_token.category == sCHAR) {
+        decl();
+    }
+    else if (current_token.category == sIDENTIF) {
+        char name[64];
+        strcpy(name, current_token.lexeme);
+
+        if (!ts_lookup(name)) {
+            printf("Erro: variável '%s' não declarada (linha %d)\n", name, current_token.line);
+            exit(1);
+        }
+
         match(sIDENTIF);
         match(sATRIB);
-        expr(); 
+        expr();
         match(sSEMI);
     }
     else if (current_token.category == sIF) {
@@ -85,7 +104,11 @@ static void stmt() {
 static void block(){
     match(sSTART);
 
+    ts_enter_scope();
+
     stmt_list();
+
+    ts_exit_scope();
 
     match(sEND);
 }
@@ -96,6 +119,33 @@ static void program() {
     match(sSEMI);
 
     block();
+
+    match(sEOF);
+}
+
+static void decl() {
+    int type = current_token.category;
+    match(type);
+
+    while (1) {
+        char name[64];
+        strcpy(name, current_token.lexeme);
+
+        match(sIDENTIF);
+
+        if (!ts_insert(name, sIDENTIF, type)) {
+            printf("Erro: variável '%s' já declarada (linha %d)\n", name, current_token.line);
+            exit(1);
+        }
+
+        if (current_token.category == sCOMMA) {
+            match(sCOMMA);
+        } else {
+            break;
+        }
+    }
+
+    match(sSEMI);
 }
 
 static void factor() {

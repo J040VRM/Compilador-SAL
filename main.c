@@ -4,6 +4,7 @@
 #include "lex.h"
 #include "token.h"
 #include "parser.h"
+#include "symtab.h"
 
 int main(int argc, char *argv[]) {
 
@@ -46,6 +47,7 @@ int main(int argc, char *argv[]) {
 
     if (!do_tokens) {
         /* modo parser */
+        ts_init();
         parse_program(&lexer);
     } else {
         /* modo geração de tokens */

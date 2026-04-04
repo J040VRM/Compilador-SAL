@@ -28,6 +28,7 @@
 *.x86_64
 *.hex
 *.elf
+salc
 
 # Debug
 *.dSYM/
@@ -85,3 +86,9 @@ autom4te.cache/
 # =========================
 
 *.log
+*.tk
+*.ts
+*.trc
+
+# Build local
+build/

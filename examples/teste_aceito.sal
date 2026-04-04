@@ -1,0 +1,56 @@
+module TesteAceito;
+
+@{
+  Exemplo de programa SAL aceito pelo compilador.
+  Este teste cobre globais, funcao, procedimento,
+  locals, for, if/else, match e loop while.
+}@
+
+globals
+  total, limite: int;
+  dados[4]: int;
+
+fn DOBRO(valor: int): int
+start
+  ret valor * 2;
+end
+
+proc EXIBE_CLASSIFICACAO(valor: int)
+start
+  match (valor)
+    when 0 => print("valor igual a zero");
+    when 1, 2 => print("valor pequeno");
+    when 3..6 => print("valor medio");
+    otherwise => print("valor fora da faixa");
+  end;
+end
+
+proc main()
+locals
+  i, soma: int;
+start
+  limite := 4;
+  total := 0;
+  soma := 0;
+
+  for i := 1 to limite do
+  start
+    dados[i] := DOBRO(i);
+    soma := soma + dados[i];
+  end;
+
+  if (soma > 10)
+    print("Soma calculada:", soma)
+  else
+    print("Soma pequena:", soma);
+
+  EXIBE_CLASSIFICACAO(limite);
+
+  loop while (total < 3)
+  start
+    print("Iteracao:", total);
+    total := total + 1;
+  end;
+
+  print("Programa finalizado.");
+end

@@ -77,30 +77,35 @@ Token lex_next(Lexer *lexer) {
     lex_skip_ignored(lexer);
     c = lex_peek(lexer);
 
+    /* fim de arquivo vira um token proprio */
     if (c == EOF) {
         token = token_make(sEOF, "", lexer->line, lexer->column);
         lex_log_token(lexer, &token);
         return token;
     }
 
+    /* identificadores e palavras reservadas comecam por letra ou _ */
     if (isalpha(c) || c == '_') {
         token = lex_read_identifier_or_keyword(lexer);
         lex_log_token(lexer, &token);
         return token;
     }
 
+    /* inteiros sao lidos como uma sequencia de digitos */
     if (isdigit(c)) {
         token = lex_read_number(lexer);
         lex_log_token(lexer, &token);
         return token;
     }
 
+    /* string usa aspas duplas */
     if (c == '"') {
         token = lex_read_string(lexer);
         lex_log_token(lexer, &token);
         return token;
     }
 
+    /* char usa aspas simples */
     if (c == '\'') {
         token = lex_read_char(lexer);
         lex_log_token(lexer, &token);
@@ -154,7 +159,9 @@ static void lex_skip_ignored(Lexer *lexer) {
 
     do {
         advanced = 0;
+        /* primeiro remove espacos em branco */
         lex_skip_whitespace(lexer);
+        /* depois tenta remover um comentario */
         advanced = lex_skip_comment(lexer);
     } while (advanced);
 }
@@ -232,6 +239,7 @@ static Token lex_read_number(Lexer *lexer) {
     int line = lexer->line;
     int column = lexer->column;
 
+    /* continua enquanto ainda estiver lendo digitos */
     while (isdigit(c) && length < LEXEME_CAP - 1) {
         buffer[length++] = (char)lex_advance(lexer);
         c = lex_peek(lexer);
@@ -250,6 +258,7 @@ static Token lex_read_string(Lexer *lexer) {
 
     lex_advance(lexer);
 
+    /* string termina em aspas ou erro de quebra de linha */
     while ((c = lex_peek(lexer)) != EOF && c != '"' && c != '\n') {
         if (length >= LEXEME_CAP - 1) {
             diag_errorf(line, column, "string excede tamanho maximo suportado");
@@ -272,6 +281,7 @@ static Token lex_read_char(Lexer *lexer) {
     int line = lexer->line;
     int column = lexer->column;
 
+    /* consome a aspas de abertura */
     lex_advance(lexer);
     c = lex_advance(lexer);
 
@@ -282,6 +292,7 @@ static Token lex_read_char(Lexer *lexer) {
     buffer[0] = (char)c;
     buffer[1] = '\0';
 
+    /* char precisa fechar logo em seguida */
     if (lex_peek(lexer) != '\'') {
         diag_errorf(line, column, "literal char deve conter exatamente um caractere");
     }
@@ -298,12 +309,14 @@ static Token lex_read_symbol(Lexer *lexer) {
     /* aqui ficam operadores e delimitadores */
     switch (c) {
         case ':':
+            /* pode ser : ou := */
             if (lex_peek(lexer) == '=') {
                 lex_advance(lexer);
                 return token_make(sATRIB, ":=", line, column);
             }
             return token_make(sCOLON, ":", line, column);
         case '<':
+            /* pode ser <, <= ou <> */
             if (lex_peek(lexer) == '=') {
                 lex_advance(lexer);
                 return token_make(sMENORIG, "<=", line, column);
@@ -314,18 +327,21 @@ static Token lex_read_symbol(Lexer *lexer) {
             }
             return token_make(sMENOR, "<", line, column);
         case '>':
+            /* pode ser > ou >= */
             if (lex_peek(lexer) == '=') {
                 lex_advance(lexer);
                 return token_make(sMAIORIG, ">=", line, column);
             }
             return token_make(sMAIOR, ">", line, column);
         case '=':
+            /* pode ser = ou => */
             if (lex_peek(lexer) == '>') {
                 lex_advance(lexer);
                 return token_make(sIMPLIC, "=>", line, column);
             }
             return token_make(sIGUAL, "=", line, column);
         case '.':
+            /* em SAL dois pontos formam intervalo */
             if (lex_peek(lexer) == '.') {
                 lex_advance(lexer);
                 return token_make(sPTOPTO, "..", line, column);

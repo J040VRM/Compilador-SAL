@@ -5,7 +5,7 @@
 
 #define MAX_SYMBOLS 2048
 #define MAX_SCOPES 256
-#define MAX_PATH 256
+#define MAX_PATH 512
 
 typedef struct {
     int id;
@@ -52,6 +52,7 @@ void ts_destroy(void) {
 void ts_enter_named_scope(const char *name) {
     Scope *current;
     Scope *scope;
+    int written;
 
     /* cria um novo escopo e liga com o escopo pai */
     if (scope_count >= MAX_SCOPES) {
@@ -62,13 +63,17 @@ void ts_enter_named_scope(const char *name) {
     scope = &scopes[scope_count];
     scope->id = scope_count;
     scope->parent_id = current_scope_id;
-    strncpy(scope->path, name, sizeof(scope->path) - 1);
-    scope->path[sizeof(scope->path) - 1] = '\0';
     scope->next_block_index = 1;
 
     if (current != NULL && strcmp(name, "global") != 0 && strchr(name, '.') == NULL &&
         strncmp(name, "proc:", 5) != 0 && strncmp(name, "fn:", 3) != 0) {
-        snprintf(scope->path, sizeof(scope->path), "%s.%s", current->path, name);
+        written = snprintf(scope->path, sizeof(scope->path), "%s.%s", current->path, name);
+    } else {
+        written = snprintf(scope->path, sizeof(scope->path), "%s", name);
+    }
+
+    if (written < 0 || (size_t)written >= sizeof(scope->path)) {
+        return;
     }
 
     current_scope_id = scope->id;
@@ -77,7 +82,8 @@ void ts_enter_named_scope(const char *name) {
 
 void ts_enter_block_scope(void) {
     Scope *current;
-    char name[64];
+    char name[MAX_PATH];
+    int written;
 
     current = ts_scope_by_id(current_scope_id);
     if (current == NULL) {
@@ -85,7 +91,11 @@ void ts_enter_block_scope(void) {
     }
 
     /* blocos internos recebem nomes automaticos */
-    snprintf(name, sizeof(name), "%s.block#%d", current->path, current->next_block_index);
+    written = snprintf(name, sizeof(name), "%s.block#%d", current->path, current->next_block_index);
+    if (written < 0 || (size_t)written >= sizeof(name)) {
+        return;
+    }
+
     current->next_block_index++;
     ts_enter_named_scope(name);
 }

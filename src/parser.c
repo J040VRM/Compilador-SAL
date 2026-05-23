@@ -147,11 +147,13 @@ static void parse_module(void) {
 
 static void parse_globals(void) {
     trace_enter("globals");
+    /* globals contem declaracoes globais */
     parse_declaration_list();
     trace_exit("globals");
 }
 
 static void parse_declaration_list(void) {
+    /* continua lendo enquanto houver declaracao iniciando por id */
     while (current_token.category == sIDENTIF) {
         parse_declaration();
     }
@@ -206,6 +208,7 @@ static void parse_declaration(void) {
 static DataType parse_type(void) {
     DataType type = token_to_type(current_token.category);
 
+    /* converte token da linguagem para o tipo interno da TS */
     if (type == TYPE_NONE) {
         diag_errorf(current_token.line, current_token.column, "tipo invalido \"%s\"", current_token.lexeme);
     }
@@ -215,6 +218,7 @@ static DataType parse_type(void) {
 }
 
 static void parse_subroutine_list(void) {
+    /* le as sub-rotinas que aparecem antes da main */
     while (current_token.category == sFN || current_token.category == sPROC) {
         if (current_token.category == sPROC) {
             Token lookahead = peek_token();
@@ -307,6 +311,7 @@ static int parse_params_and_count(void) {
 
     trace_enter("params");
 
+    /* parametros sao opcionais */
     if (current_token.category == sIDENTIF) {
         while (1) {
             char name[64];
@@ -335,6 +340,7 @@ static int parse_params_and_count(void) {
 static int parse_optional_locals(const char *scope_name) {
     char locals_scope[128];
 
+    /* locals so existe dentro de proc ou fn */
     if (!accept(sLOCALS)) {
         return 0;
     }
@@ -365,6 +371,7 @@ static void parse_block(int create_scope) {
 }
 
 static void parse_statement_list(Category terminator_a, Category terminator_b) {
+    /* para quando chega no token que fecha a estrutura atual */
     while (current_token.category != terminator_a &&
            current_token.category != terminator_b &&
            current_token.category != sUNTIL &&
@@ -418,6 +425,7 @@ static void parse_statement(void) {
 }
 
 static void parse_embedded_command(void) {
+    /* usado em estruturas que aceitam um comando ou um bloco */
     switch (current_token.category) {
         case sIDENTIF:
             parse_assignment_or_call(0);
@@ -459,6 +467,7 @@ static void parse_assignment_or_call(int require_semicolon) {
     copy_lexeme(&current_token, name, sizeof(name));
     consume(sIDENTIF);
 
+    /* depois do id, o proximo token decide se eh atribuicao ou chamada */
     if (current_token.category == sLPAR) {
         parse_call_tail(name, line, column, require_semicolon);
     } else {
@@ -467,8 +476,10 @@ static void parse_assignment_or_call(int require_semicolon) {
 }
 
 static void parse_assignment_tail(const char *identifier, int line, int column, int require_semicolon) {
+    /* o lado esquerdo precisa existir antes da atribuicao */
     require_symbol(identifier, line, column);
 
+    /* vetor pode aparecer como id[expr] */
     if (accept(sLBRACK)) {
         parse_expr();
         consume(sRBRACK);
@@ -485,11 +496,13 @@ static void parse_assignment_tail(const char *identifier, int line, int column, 
 static void parse_call_tail(const char *identifier, int line, int column, int require_semicolon) {
     const Symbol *symbol = ts_lookup(identifier);
 
+    /* chamada so faz sentido para proc ou fn */
     if (symbol == NULL || (symbol->kind != SYM_PROC && symbol->kind != SYM_FN)) {
         diag_errorf(line, column, "sub-rotina \"%s\" nao declarada", identifier);
     }
 
     consume(sLPAR);
+    /* argumentos tambem sao opcionais */
     if (current_token.category != sRPAR) {
         parse_argument_list();
     }
@@ -501,6 +514,7 @@ static void parse_call_tail(const char *identifier, int line, int column, int re
 }
 
 static void parse_scan(int require_semicolon) {
+    /* scan recebe uma variavel de destino */
     consume(sSCAN);
     consume(sLPAR);
     parse_variable_reference(1);
@@ -511,6 +525,7 @@ static void parse_scan(int require_semicolon) {
 }
 
 static void parse_print(int require_semicolon) {
+    /* print aceita um ou mais elementos */
     consume(sPRINT);
     consume(sLPAR);
     parse_expr();
@@ -524,6 +539,7 @@ static void parse_print(int require_semicolon) {
 }
 
 static void parse_if(int require_semicolon) {
+    /* if usa expressao entre parenteses */
     consume(sIF);
     consume(sLPAR);
     parse_expr();
@@ -668,6 +684,7 @@ static void parse_argument_list(void) {
 }
 
 static void parse_when_condition(void) {
+    /* when aceita valor isolado, lista ou intervalo */
     parse_when_item();
     while (accept(sCOMMA)) {
         parse_when_item();
@@ -705,6 +722,7 @@ static void parse_and_expr(void) {
 }
 
 static void parse_rel_expr(void) {
+    /* comparacoes ficam acima de soma e multiplicacao */
     parse_add_expr();
     while (current_token.category == sMENOR || current_token.category == sMENORIG ||
            current_token.category == sMAIOR || current_token.category == sMAIORIG ||
@@ -715,6 +733,7 @@ static void parse_rel_expr(void) {
 }
 
 static void parse_add_expr(void) {
+    /* soma e subtracao binarias */
     parse_mul_expr();
     while (current_token.category == sSOMA || current_token.category == sSUBRAT) {
         next_token();
@@ -723,6 +742,7 @@ static void parse_add_expr(void) {
 }
 
 static void parse_mul_expr(void) {
+    /* multiplicacao e divisao */
     parse_unary_expr();
     while (current_token.category == sMULT || current_token.category == sDIV) {
         next_token();
@@ -731,6 +751,7 @@ static void parse_mul_expr(void) {
 }
 
 static void parse_unary_expr(void) {
+    /* operadores unarios tem precedencia maior */
     if (current_token.category == sNEG || current_token.category == sSUBRAT) {
         next_token();
         parse_unary_expr();

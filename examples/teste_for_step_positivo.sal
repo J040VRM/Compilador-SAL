@@ -1,0 +1,9 @@
+module TesteForStepPositivo;
+
+proc main()
+locals
+  i: int;
+start
+  for i := 1 to 5 step 2 do
+    print(i);
+end

@@ -1,0 +1,15 @@
+module TesteFuncao;
+
+globals
+  resultado: int;
+
+fn DOBRO(valor: int): int
+start
+  ret valor * 2;
+end
+
+proc main()
+start
+  resultado := DOBRO(5);
+  print(resultado);
+end

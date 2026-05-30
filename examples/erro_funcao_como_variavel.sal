@@ -1,0 +1,11 @@
+module ErroFuncaoComoVariavel;
+
+fn F(): int
+start
+  ret 1;
+end
+
+proc main()
+start
+  F := 2;
+end

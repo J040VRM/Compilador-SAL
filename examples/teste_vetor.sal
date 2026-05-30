@@ -1,0 +1,14 @@
+module TesteVetor;
+
+globals
+  dados[3]: int;
+
+proc main()
+locals
+  i: int;
+start
+  i := 1;
+  dados[i] := 10;
+  dados[2] := dados[i] + 5;
+  print(dados[2]);
+end

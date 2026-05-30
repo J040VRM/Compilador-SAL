@@ -1,0 +1,14 @@
+module TesteLoopWhile;
+
+globals
+  i: int;
+
+proc main()
+start
+  i := 0;
+  loop while (i < 3)
+  start
+    print(i);
+    i := i + 1;
+  end;
+end

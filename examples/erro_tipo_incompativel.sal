@@ -1,0 +1,10 @@
+module ErroTipoIncompativel;
+
+globals
+  x: int;
+  b: bool;
+
+proc main()
+start
+  x := b;
+end

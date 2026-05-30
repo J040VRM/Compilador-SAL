@@ -1,0 +1,9 @@
+module TesteForStepNegativo;
+
+proc main()
+locals
+  i: int;
+start
+  for i := 5 to 1 step -2 do
+    print(i);
+end

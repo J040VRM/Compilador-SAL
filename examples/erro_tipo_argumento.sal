@@ -1,0 +1,11 @@
+module ErroTipoArgumento;
+
+proc MOSTRA(valor: int)
+start
+  print(valor);
+end
+
+proc main()
+start
+  MOSTRA(true);
+end

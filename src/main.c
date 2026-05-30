@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "diag.h"
+#include "gerador.h"
 #include "lex.h"
 #include "log.h"
 #include "opts.h"
@@ -15,9 +16,12 @@ int main(int argc, char **argv) {
     FILE *token_log = NULL;
     FILE *trace_log = NULL;
     FILE *symtab_log = NULL;
+    FILE *mepa_file = NULL;
+    FILE *mepa_output = NULL;
     char token_path[512];
     char trace_path[512];
     char symtab_path[512];
+    char mepa_path[512];
     Lexer lexer;
 
     /* le os argumentos da linha de comando */
@@ -70,8 +74,25 @@ int main(int argc, char **argv) {
         }
     }
 
+    mepa_file = tmpfile();
+    if (mepa_file == NULL) {
+        fprintf(stderr, "erro: nao foi possivel criar arquivo temporario MEPA\n");
+        fclose(source);
+        if (token_log != NULL) {
+            fclose(token_log);
+        }
+        if (trace_log != NULL) {
+            fclose(trace_log);
+        }
+        if (symtab_log != NULL) {
+            fclose(symtab_log);
+        }
+        return EXIT_FAILURE;
+    }
+
     /* inicializa os modulos principais */
     diag_init(trace_log);
+    gerador_init(mepa_file);
     ts_init();
     lex_init(&lexer, source, token_log);
 
@@ -82,9 +103,39 @@ int main(int argc, char **argv) {
         ts_dump(symtab_log);
     }
 
+    mepa_output = log_open_with_extension(options.source_path, ".mepa", mepa_path, sizeof(mepa_path));
+    if (mepa_output == NULL) {
+        fprintf(stderr, "erro: nao foi possivel criar arquivo MEPA\n");
+        lex_destroy(&lexer);
+        ts_destroy();
+        gerador_shutdown();
+        diag_shutdown();
+        fclose(source);
+        if (token_log != NULL) {
+            fclose(token_log);
+        }
+        if (trace_log != NULL) {
+            fclose(trace_log);
+        }
+        if (symtab_log != NULL) {
+            fclose(symtab_log);
+        }
+        fclose(mepa_file);
+        return EXIT_FAILURE;
+    }
+
+    rewind(mepa_file);
+    {
+        int c;
+        while ((c = fgetc(mepa_file)) != EOF) {
+            fputc(c, mepa_output);
+        }
+    }
+
     /* fecha tudo no final */
     lex_destroy(&lexer);
     ts_destroy();
+    gerador_shutdown();
     diag_shutdown();
 
     fclose(source);
@@ -97,6 +148,8 @@ int main(int argc, char **argv) {
     if (symtab_log != NULL) {
         fclose(symtab_log);
     }
+    fclose(mepa_file);
+    fclose(mepa_output);
 
     return EXIT_SUCCESS;
 }

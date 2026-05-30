@@ -1,0 +1,14 @@
+module TesteMatch;
+
+proc main()
+locals
+  cod: int;
+start
+  cod := 150;
+  match (cod)
+    when 0 => print(0);
+    when 1, 2, 3 => print(1);
+    when 100..199 => print(2);
+    otherwise => print(9);
+  end;
+end

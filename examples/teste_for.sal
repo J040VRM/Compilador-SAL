@@ -1,0 +1,9 @@
+module TesteFor;
+
+proc main()
+locals
+  i: int;
+start
+  for i := 1 to 3 do
+    print(i);
+end

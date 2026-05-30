@@ -1,0 +1,10 @@
+module ErroDuplicada;
+
+globals
+  x: int;
+  x: int;
+
+proc main()
+start
+  print(0);
+end

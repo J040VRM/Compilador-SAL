@@ -1,0 +1,9 @@
+module TesteScan;
+
+proc main()
+locals
+  x: int;
+start
+  scan(x);
+  print(x);
+end

@@ -1,0 +1,15 @@
+module TesteExpressoes;
+
+proc main()
+locals
+  a, b: int;
+  ok: bool;
+start
+  a := 2 + 3 * 4 / 2 - 1;
+  b := 7;
+  ok := a > b ^ true v false;
+  if (ok)
+    print(a)
+  else
+    print(b);
+end

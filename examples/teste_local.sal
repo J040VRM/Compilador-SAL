@@ -1,0 +1,9 @@
+module TesteLocal;
+
+proc main()
+locals
+  x: int;
+start
+  x := 1;
+  print(x);
+end

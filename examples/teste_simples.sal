@@ -1,0 +1,10 @@
+module TesteSimples;
+
+globals
+  x: int;
+
+proc main()
+start
+  x := 7;
+  print(x);
+end

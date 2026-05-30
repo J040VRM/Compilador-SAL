@@ -1,0 +1,13 @@
+module TesteIfElse;
+
+globals
+  x: int;
+
+proc main()
+start
+  x := 3;
+  if (x > 2)
+    print(x)
+  else
+    print(0);
+end

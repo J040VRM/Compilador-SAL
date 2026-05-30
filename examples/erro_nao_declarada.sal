@@ -1,0 +1,6 @@
+module ErroNaoDeclarada;
+
+proc main()
+start
+  x := 1;
+end
